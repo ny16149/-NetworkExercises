@@ -212,7 +212,6 @@
   - s=socket(PF_INET,SOCK_DGRAM,0);
 - 解説
   - ソケットを生成する。(socket)
-<br>
 - プログラム
   - client(s,(struct sockaddr *)&peer,sizeof(peer));
 - 解説
