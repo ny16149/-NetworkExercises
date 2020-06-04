@@ -318,3 +318,100 @@
   - <host>の省略時、hnameはNULLが設定されている。
   - sap->sin_addrにhtonl(INADDR_ANY)を設定する。
   - INADDR＿ANYは0に設定されている。
+- 実行例
+  - %./tcp4_echo_cli3 172.25.8.142
+- プログラム
+  - if(!inet_pton(AF_INET,hname,&sap->sin_addr)){
+- 解説
+  - <host>にリテラル(数値)を指定した時、hnameは、リテラル(数値)の文字列が設定されている。
+  - inet_pton関数でIPv4アドレスに変換し、sap->sin_addrに直接設定する。
+  - inet_ptonの戻り値で、1なら変換成功。0なら変換不成功。
+- 実行例
+  - %./tcp4_echo_cli3 salem
+- プログラム
+  - hp = gethostbyname2(hame,AF_INET);
+- 解説
+  - <host>にホスト名を指定した時、hnameは、ホスト名の文字列が設定されている。
+  - gethostbyname2関数でIPv4アドレスに変換し、sap->sin_addrにhp->h_addrを設定する。
+  - 戻り値が10行目のstruct hostent構造体へのポインタ。NULLの時は、エラー、ホスト名を解決できなかった。
+
+<a id="content30"></a>
+## ポート番号(<port>,sname)の設定
+- 実行例
+  - %./tcp4_echo_srv2 &
+- プログラム
+  - if(sname=NULL)
+    - sap->sin_port = htons(PORT_NO)
+- 解説
+  - -p<port>の省略時、snameがNULLに設定されている。
+  - sap->sin_portにhtons(PORT_NO)を設定する。
+  - PORT_NOは(9Y00 + 出席番号)に設定されている。
+
+- 実行例
+  - %./tcp6_echo_cli3 -p 7 winston
+- プログラム
+  - port = strtol(sname,&endptr,0);
+  - if(*endptr == 0)
+  - sap->sin_port = htons(port);
+- 解説
+  - -p<port>にリテラル(数値)を指定した時、snameは、リテラル(数値)の文字列が設定されている。
+  - strtol()でポート番号に変換し、sap->sin_portにhtons(port)を設定する。
+  - *endptr == 0は文字列の最後まで読んだよいう意味。
+- 実行例
+  - %./tcp6_echo_cli3 -p echo tar heel
+- プログラム
+  - sap = getservbyname(sname,protocol);
+- 解説
+  - -p<port>にサービス名を指定した時、snameには、サービス名の文字列が設定されている。
+  - getserbyname()でポート番号に変換し、sap->sin_portにsp->s_portを設定する。
+
+<a id="content31"></a>
+## バイトオーダー
+- 複数バイトのデータを、メモリに配置する順序
+- ビッグエンディアン
+  - 最下位バイト(エンド)を上位アドレスに配置する。
+- リトルエンディアン
+  - 最下位バイト(エンド)を下位アドレスに配置する。
+- ネットワークのバイトオーダー
+  - ビッグエンディアン
+
+<a id="content32"></a>
+## バイトオーダー変換関数
+- プログラムの移植性を高めるため、常に指定する。
+- プロセッサ（ホスト）からネットワーク
+  - net = htonl(host);		long型(IPアドレス)
+  - net = htons(host);	short型(ポート番号)
+- ネットワークからプロセッサ
+  - host = ntohl(net);		long型
+  - host = ntohs(net);	short型
+- 各関数はマクロです。
+  - ビッグエンディアンは何もしない。
+  - リトルエンディアンは反転する。
+
+<a id="content33"></a>
+## ソケットアドレス構造体と入出力
+- 各メンバへの書込み
+  - ネットワークバイトオーダに変換して書込む。
+    - s->sin_addr = htonl(INADDR_ANY);
+    - s->sin_port = htons(port);
+- 各メンバからの読出し
+  - ホストバイトオーダに変換して読み出す。
+    - padder = ntohl(s->sin_addr);
+    - portion = ntohs(s->sin_port);
+
+<a id="content34"></a>
+## バイトオーダー変換関数の必要性
+- 必要がない場合
+  - 関数内で変換も行う関数。
+    - inet_pton(),gethostbyname2(),getserbyname()。
+- 必要がある場合
+  - 一般の文字列操作関数の出力。
+    - strol()等。
+
+<a id="content35"></a>
+## UDPエコークライアント
+- プログラム
+  - while(fgets(send_buf,sizeof(send_buf),stdin)!=NULL)
+- 解説
+  - 送受信のループ、標準入力から送信データを入力する。
+  - fgets()の戻り値がNULLなら入力終了(CTRL-D)である。
